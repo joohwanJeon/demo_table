@@ -1,0 +1,15 @@
+{
+  "name": "catchtable-demo-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "node .output/server/index.mjs",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "nuxt": "^3.13.0",
+    "vue": "^3.5.0"
+  }
+}

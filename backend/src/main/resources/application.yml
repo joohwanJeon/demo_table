@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # 로컬 개발 시 기본값. K8s에서는 환경변수(SPRING_DATASOURCE_*)로 덮어씀
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/demo_table?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:1234}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+
+# K8s가 Pod 이름을 HOSTNAME 환경변수로 자동 주입함 (로드밸런싱 증적용)
+app:
+  pod-name: ${HOSTNAME:local-dev}

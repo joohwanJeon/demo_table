@@ -1,0 +1,53 @@
+# ===== Java / Spring Boot (Gradle) =====
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+
+# 컴파일 결과
+*.class
+out/
+bin/
+
+# ===== Node / Nuxt3 (프론트) =====
+node_modules/
+.nuxt/
+.output/
+.nitro/
+.cache/
+dist/
+*.local
+
+# ===== 환경변수 / 비밀정보 (절대 커밋 금지) =====
+.env
+.env.*
+!.env.example
+application-local.yml
+application-secret.yml
+*.pem
+*.key
+
+# ===== IDE =====
+.idea/
+*.iml
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 로그 / 임시 =====
+*.log
+logs/
+tmp/
+temp/

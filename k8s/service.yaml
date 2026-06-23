@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation-api
+spec:
+  type: ClusterIP                 # Ingress(ALB)가 앞단에서 외부 노출을 담당
+  selector:
+    app: reservation-api          # 위 Deployment의 Pod label과 일치해야 트래픽이 분산됨
+  ports:
+    - port: 80
+      targetPort: 8080
