@@ -1,34 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reservation-api
+  name: team3-backend
   labels:
-    app: reservation-api
+    app: team3-backend
 spec:
-  replicas: 2                      # 기본 가용성 확보 (Self-Healing 시연 대상)
+  replicas: 2
   selector:
     matchLabels:
-      app: reservation-api
+      app: team3-backend
   strategy:
-    type: RollingUpdate           # 무중단 배포 (RFP 롤링 업데이트 전략)
+    type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
   template:
     metadata:
       labels:
-        app: reservation-api
+        app: team3-backend
     spec:
       containers:
-        - name: reservation-api
-          # TODO: 본인 ECR 주소로 교체
-          image: <ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/reservation-api:latest
+        - name: team3-backend
+          image: 672381912436.dkr.ecr.ap-northeast-2.amazonaws.com/team3-ecr-backend:latest
           ports:
             - containerPort: 8080
           env:
             - name: SPRING_DATASOURCE_URL
-              # TODO: 본인 RDS 엔드포인트로 교체
-              value: "jdbc:mysql://<RDS_ENDPOINT>:3306/reservation?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul"
+              value: "jdbc:mysql://team3-rds-mysql.cxljtidrhi5i.ap-northeast-2.rds.amazonaws.com:3306/demo_table?useSSL=true&requireSSL=true&serverTimezone=Asia/Seoul"
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -39,15 +37,13 @@ spec:
                 secretKeyRef:
                   name: db-secret
                   key: password
-          # ★ HPA가 동작하려면 requests가 반드시 있어야 함 (CPU% 계산 기준) ★
           resources:
             requests:
               cpu: "250m"
-              memory: "384Mi"     # Spring Boot(JVM)는 128Mi로는 못 뜸 → 넉넉히
+              memory: "384Mi"
             limits:
               cpu: "500m"
               memory: "768Mi"
-          # Spring Boot는 기동이 느려서 initialDelay를 길게 잡아야 재시작 루프를 안 탐
           readinessProbe:
             httpGet:
               path: /api/health
@@ -60,3 +56,15 @@ spec:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: team3-backend-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: team3-backend
+  ports:
+    - port: 80
+      targetPort: 8080
