@@ -14,6 +14,8 @@ spec:
       labels:
         app: team3-frontend
     spec:
+      imagePullSecrets:
+        - name: ecr-secret
       containers:
         - name: team3-frontend
           image: 672381912436.dkr.ecr.ap-northeast-2.amazonaws.com/team3-ecr-frontend:latest
