@@ -1,0 +1,51 @@
+name: build-and-deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  ACCOUNT_ID: "672381912436"
+  REGION: ap-northeast-2
+
+jobs:
+  # ===== CI: 빌드 + ECR 푸시 (빌드EC2 runner) =====
+  build:
+    runs-on: [self-hosted, build]
+    steps:
+      - name: 소스 체크아웃
+        uses: actions/checkout@v4
+
+      - name: ECR 로그인
+        run: |
+          aws ecr get-login-password --region $REGION \
+            | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+
+      - name: 백엔드 빌드 & 푸시
+        run: |
+          cd backend
+          docker build -t team3-ecr-backend .
+          docker tag team3-ecr-backend:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/team3-ecr-backend:latest
+          docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/team3-ecr-backend:latest
+
+      - name: 프론트 빌드 & 푸시
+        run: |
+          cd frontend
+          docker build -t team3-ecr-frontend .
+          docker tag team3-ecr-frontend:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/team3-ecr-frontend:latest
+          docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/team3-ecr-frontend:latest
+
+  # ===== CD: K8s 배포 (cp runner) =====
+  deploy:
+    runs-on: [self-hosted, runner]
+    needs: build
+    steps:
+      - name: 백엔드 롤아웃
+        run: |
+          kubectl rollout restart deployment team3-backend
+          kubectl rollout status deployment team3-backend --timeout=180s
+
+      - name: 프론트 롤아웃
+        run: |
+          kubectl rollout restart deployment team3-frontend
+          kubectl rollout status deployment team3-frontend --timeout=180s
