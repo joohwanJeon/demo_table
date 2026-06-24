@@ -16,15 +16,24 @@
 
       <div class="form">
         <h2>예약하기</h2>
-        <input v-model="name" placeholder="예약자 이름" />
-        <input v-model.number="party" type="number" min="1" placeholder="인원수" />
-        <button :disabled="sending" @click="reserve">
-          {{ sending ? '예약 중…' : '예약하기' }}
-        </button>
-        <p v-if="result" class="result">
-          {{ result.message }} · 응답 Pod: <b>{{ result.servedBy }}</b>
-          (이 식당 누적 예약 {{ result.totalReservations }}건)
-        </p>
+        <!-- 비로그인 시 안내 -->
+        <div v-if="!isLoggedIn" class="login-notice">
+          <p>예약하려면 로그인이 필요합니다.</p>
+          <NuxtLink to="/login" class="btn-login-link">로그인하기</NuxtLink>
+        </div>
+        <!-- 로그인 시 예약 폼 -->
+        <template v-else>
+          <input v-model="name" placeholder="예약자 이름" />
+          <input v-model.number="party" type="number" min="1" placeholder="인원수" />
+          <button :disabled="sending" @click="reserve">
+            {{ sending ? '예약 중…' : '예약하기' }}
+          </button>
+          <p v-if="result" class="result">
+            {{ result.message }} · 응답 Pod: <b>{{ result.servedBy }}</b>
+            (이 식당 누적 예약 {{ result.totalReservations }}건)
+          </p>
+          <p v-if="reserveError" class="err-msg">{{ reserveError }}</p>
+        </template>
       </div>
     </div>
   </div>
@@ -34,6 +43,7 @@
 const route = useRoute()
 const config = useRuntimeConfig()
 const api = config.public.apiBase
+const { isLoggedIn, token } = useAuth()
 
 const { data, pending, error, refresh } = await useFetch(
   () => `${api}/api/restaurants/${route.params.id}`,
@@ -44,17 +54,24 @@ const name = ref('')
 const party = ref(2)
 const sending = ref(false)
 const result = ref(null)
+const reserveError = ref('')
 
 async function reserve() {
   sending.value = true
   result.value = null
+  reserveError.value = ''
   try {
     result.value = await $fetch(`${api}/api/reservations`, {
       method: 'POST',
+      headers: { Authorization: `Bearer ${token.value}` },
       body: { restaurantId: Number(route.params.id), customerName: name.value, partySize: party.value }
     })
   } catch (e) {
-    result.value = { message: '예약 실패', servedBy: '-', totalReservations: '-' }
+    if (e?.status === 401) {
+      reserveError.value = '로그인이 만료되었습니다. 다시 로그인해주세요.'
+    } else {
+      reserveError.value = '예약에 실패했습니다.'
+    }
   } finally {
     sending.value = false
   }
@@ -77,4 +94,9 @@ async function reserve() {
   padding: 11px 18px; font-size: 15px; cursor: pointer; }
 .form button:disabled { opacity: .6; cursor: default; }
 .result { margin-top: 12px; color: var(--pod); font-size: 14px; }
+.err-msg { color: var(--accent); font-size: 13px; margin-top: 8px; }
+.login-notice { text-align: center; padding: 16px 0; }
+.login-notice p { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
+.btn-login-link { background: var(--accent); color: #fff; border-radius: 8px;
+  padding: 10px 20px; font-size: 14px; font-weight: 600; }
 </style>
