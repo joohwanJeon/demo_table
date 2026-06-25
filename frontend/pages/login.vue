@@ -18,6 +18,10 @@
         <button type="submit" class="btn-primary" :disabled="loading">
           {{ loading ? '확인 중...' : '로그인' }}
         </button>
+        <div class="divider"><span>또는</span></div>
+        <NuxtLink to="/login-aws" class="btn-aws">
+          🔐 AWS 계정으로 로그인 (MFA)
+        </NuxtLink>
         <p class="link-row">계정이 없으신가요? <NuxtLink to="/register">회원가입</NuxtLink></p>
       </form>
 
@@ -66,7 +70,6 @@ const errorMsg = ref('')
 const loading = ref(false)
 const otpInput = ref(null)
 
-// 1단계: ID/PW 로그인
 const handleLogin = async () => {
   loading.value = true
   errorMsg.value = ''
@@ -75,7 +78,6 @@ const handleLogin = async () => {
       method: 'POST',
       body: { username: form.username, password: form.password }
     })
-
     if (res.status === 'OTP_REQUIRED') {
       step.value = 'otp'
       await nextTick()
@@ -91,7 +93,6 @@ const handleLogin = async () => {
   }
 }
 
-// 2단계: OTP 검증
 const handleOtp = async () => {
   if (otpCode.value.length !== 6) {
     errorMsg.value = '6자리 코드를 입력해주세요.'
@@ -169,7 +170,20 @@ input:focus { border-color: var(--accent); }
   color: var(--muted);
   cursor: pointer;
 }
-.btn-secondary:hover { background: var(--bg); }
+.btn-aws {
+  background: #232f3e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+.btn-aws:hover { opacity: 0.9; }
 .error { color: var(--accent); font-size: 13px; margin: 0; }
 .link-row { font-size: 13px; color: var(--muted); text-align: center; margin: 0; }
 .link-row a { color: var(--accent); font-weight: 500; }
@@ -177,4 +191,17 @@ input:focus { border-color: var(--accent); }
 .otp-icon { font-size: 36px; margin-bottom: 8px; }
 .otp-info p { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0; }
 input[inputmode="numeric"] { letter-spacing: 6px; font-size: 20px; text-align: center; }
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
 </style>
