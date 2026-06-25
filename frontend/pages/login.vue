@@ -6,7 +6,7 @@
 
       <!-- 1단계: ID/PW -->
       <form v-if="step === 'login'" @submit.prevent="handleLogin" class="form">
-        <div class="field">
+        <div class="field">  
           <label>아이디</label>
           <input v-model="form.username" type="text" placeholder="아이디 입력" required autocomplete="username" />
         </div>
