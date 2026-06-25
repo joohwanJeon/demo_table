@@ -16,8 +16,8 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     public AuthController(AuthService authService, JwtUtil jwtUtil) {
-        this.authService = authService; 
-        this.jwtUtil = jwtUtil;
+        this.authService = authService;  
+        this.jwtUtil = jwtUtil; 
     }
 
     // 회원가입
