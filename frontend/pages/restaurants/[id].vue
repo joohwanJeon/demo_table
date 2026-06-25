@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- 오픈런 대기열 오버레이 (진입 시 0.5초) -->
+    <!-- 오픈런 대기열 오버레이 (진입 시 2초, 숫자 카운트다운) -->
     <transition name="fade">
       <div v-if="queueing" class="queue-overlay">
         <div class="queue-box">
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 const route = useRoute()
 const config = useRuntimeConfig()
 const api = config.public.apiBase
@@ -58,12 +58,27 @@ const { data, pending, error, refresh } = await useFetch(
   { server: false }
 )
 
-// 오픈런 대기열 연출 (진입 시 0.5초)
+// 오픈런 대기열 연출: 진입 시 2초간 대기 인원이 0으로 줄며 사라짐
 const queueing = ref(true)
-const waiting = ref(Math.floor(Math.random() * 400) + 120) // 120~519명
+const waiting = ref(Math.floor(Math.random() * 400) + 120) // 시작 인원 120~519
+const DURATION = 2000   // 총 대기 2초
+let timer = null
+
 onMounted(() => {
-  setTimeout(() => { queueing.value = false }, 500)
+  const start = waiting.value
+  const t0 = Date.now()
+  timer = setInterval(() => {
+    const p = Math.min((Date.now() - t0) / DURATION, 1)
+    // ease-out 느낌으로 줄어듦
+    waiting.value = Math.round(start * (1 - p))
+    if (p >= 1) {
+      clearInterval(timer)
+      timer = null
+      queueing.value = false
+    }
+  }, 40)
 })
+onBeforeUnmount(() => { if (timer) clearInterval(timer) })
 
 const name = ref('')
 const party = ref(2)
@@ -134,6 +149,6 @@ async function reserve() {
 .queue-count b { color: #ffb27a; }
 .queue-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 8px; }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.4s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
