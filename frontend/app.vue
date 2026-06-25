@@ -4,7 +4,7 @@
       <NuxtLink to="/" class="logo">T3<b>-Table</b></NuxtLink>
       <span class="tagline">예약 오픈런 데모</span>
       <div class="topbar-right">
-        <template v-if="isLoggedIn">
+        <template v-if="isLoggedIn"> 
           <span class="user-info">👤 {{ username }}</span>
           <button class="btn-logout" @click="handleLogout">로그아웃</button>
         </template>
