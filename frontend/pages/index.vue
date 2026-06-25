@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="title">오늘의 예약 오픈</h1>
+    <h1 class="title">오늘의 예약 오픈</h1> 
     <p class="sub">인기 식당은 오픈 시각에 동시 접속이 몰립니다.</p>
 
     <p v-if="pending" class="state">불러오는 중…</p>
