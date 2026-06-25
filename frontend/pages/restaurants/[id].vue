@@ -1,5 +1,17 @@
 <template>
   <div>
+    <!-- 오픈런 대기열 오버레이 (진입 시 0.5초) -->
+    <transition name="fade">
+      <div v-if="queueing" class="queue-overlay">
+        <div class="queue-box">
+          <div class="queue-spinner"></div>
+          <div class="queue-title">예약 대기 중</div>
+          <div class="queue-count">내 앞에 <b>{{ waiting }}</b>명</div>
+          <div class="queue-sub">잠시만 기다려 주세요…</div>
+        </div>
+      </div>
+    </transition>
+
     <NuxtLink to="/" class="back">← 목록으로</NuxtLink>
 
     <p v-if="pending" class="state">불러오는 중…</p>
@@ -12,16 +24,12 @@
       <p class="desc">{{ data.restaurant.description }}</p>
       <div class="open">{{ data.restaurant.openTime }}</div>
 
-      <PodBadge :pod="data?.servedBy" @refresh="refresh" />
-
       <div class="form">
         <h2>예약하기</h2>
-        <!-- 비로그인 시 안내 -->
         <div v-if="!isLoggedIn" class="login-notice">
           <p>예약하려면 로그인이 필요합니다.</p>
           <NuxtLink to="/login" class="btn-login-link">로그인하기</NuxtLink>
         </div>
-        <!-- 로그인 시 예약 폼 -->
         <template v-else>
           <input v-model="name" placeholder="예약자 이름" />
           <input v-model.number="party" type="number" min="1" placeholder="인원수" />
@@ -29,7 +37,6 @@
             {{ sending ? '예약 중…' : '예약하기' }}
           </button>
           <p v-if="result" class="result">
-            {{ result.message }} · 응답 Pod: <b>{{ result.servedBy }}</b>
             (이 식당 누적 예약 {{ result.totalReservations }}건)
           </p>
           <p v-if="reserveError" class="err-msg">{{ reserveError }}</p>
@@ -40,6 +47,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 const route = useRoute()
 const config = useRuntimeConfig()
 const api = config.public.apiBase
@@ -49,6 +57,13 @@ const { data, pending, error, refresh } = await useFetch(
   () => `${api}/api/restaurants/${route.params.id}`,
   { server: false }
 )
+
+// 오픈런 대기열 연출 (진입 시 0.5초)
+const queueing = ref(true)
+const waiting = ref(Math.floor(Math.random() * 400) + 120) // 120~519명
+onMounted(() => {
+  setTimeout(() => { queueing.value = false }, 500)
+})
 
 const name = ref('')
 const party = ref(2)
@@ -81,7 +96,8 @@ async function reserve() {
 <style scoped>
 .back { color: var(--muted); font-size: 14px; display: inline-block; margin-bottom: 16px; }
 .state { color: var(--muted); } .state.err { color: var(--accent); }
-.hero { height: 260px; border-radius: 14px; background-size: cover; background-position: center; }
+.hero { height: 260px; border-radius: 14px; background-size: cover; background-position: center;
+  background-color: #e7e3da; }
 .name { font-size: 26px; margin: 18px 0 2px; }
 .cuisine { color: var(--muted); }
 .desc { line-height: 1.6; margin: 14px 0; }
@@ -99,4 +115,25 @@ async function reserve() {
 .login-notice p { color: var(--muted); font-size: 14px; margin: 0 0 12px; }
 .btn-login-link { background: var(--accent); color: #fff; border-radius: 8px;
   padding: 10px 20px; font-size: 14px; font-weight: 600; }
+
+/* 대기열 오버레이 */
+.queue-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(20, 16, 14, 0.72); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+}
+.queue-box { text-align: center; color: #fff; padding: 32px 48px; }
+.queue-spinner {
+  width: 44px; height: 44px; margin: 0 auto 18px;
+  border: 4px solid rgba(255,255,255,0.25); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.queue-title { font-size: 15px; letter-spacing: 1px; color: #f0d9c0; margin-bottom: 8px; }
+.queue-count { font-size: 26px; font-weight: 700; }
+.queue-count b { color: #ffb27a; }
+.queue-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 8px; }
+
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
