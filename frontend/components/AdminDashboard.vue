@@ -106,8 +106,11 @@ function podColor(name) {
   if (!colorMap[name]) colorMap[name] = PALETTE[Object.keys(colorMap).length % PALETTE.length]
   return colorMap[name]
 }
-const shortPod = (n) => n ? n.replace('team3-backend-', '…') : n
-
+const shortPod = (n) => {
+  if (!n) return n
+  const parts = n.split('-')
+  return '…' + parts[parts.length - 1]   // team3-backend-558f558558-gcdjl → …gcdjl
+}
 function log(m, kind = '') {
   const t = new Date().toLocaleTimeString('ko-KR', { hour12: false })
   logs.value.push({ t, m, kind })
