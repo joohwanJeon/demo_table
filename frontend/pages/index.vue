@@ -10,7 +10,7 @@
 
     <div v-else class="grid">
       <NuxtLink
-        v-for="r in data.restaurants"
+        v-for="r in topThree"
         :key="r.id"
         :to="`/restaurants/${r.id}`"
         class="card"
@@ -29,11 +29,15 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 const config = useRuntimeConfig()
 const { data, pending, error, refresh } = await useFetch(
   () => `${config.public.apiBase}/api/restaurants`,
   { server: false }
 )
+
+// T3-Table — 대표 식당 3곳만 노출
+const topThree = computed(() => (data.value?.restaurants ?? []).slice(0, 3))
 </script>
 
 <style scoped>

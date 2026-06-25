@@ -39,4 +39,9 @@ public class SystemController {
         res.put("sink", sink);
         return res;
     }
+
+    @GetMapping("/crash")
+    public void crash() {
+        System.exit(1);  // 앱 강제 종료 → 컨테이너 죽음 → K8s 자동 재시작
+    }
 }
